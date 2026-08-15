@@ -1,423 +1,251 @@
-# CloudWalk Risk Analyst Case
+# CloudWalk Risk Analyst I — External Case
 
-## Overview
+Fraud and chargeback risk analysis on a hypothetical card-not-present (CNP) transaction dataset, developed as the technical deliverable for the **Risk Analyst I — External Case**.
 
-This repository contains the analytical work developed for the **CloudWalk Risk Analyst I — External Case**.
+## Executive Summary
 
-The case simulates a real-world risk analysis scenario involving hypothetical payment transactions in a **Card-Not-Present (CNP)** environment.
+The dataset contains 3,199 CNP transactions, of which 391 (12.22%) resulted in a fraud-related chargeback. The analysis identifies four evidence-based risk signals — elevated transaction amounts, merchant-level chargeback concentration, repeated user × merchant chargeback relationships, and payment cards shared across users combined with short temporal proximity between their transactions. Device sharing was tested and found not to be a useful signal in this sample. These findings are translated into prioritized business recommendations and a conceptual anti-fraud decision flow, followed by a discussion of the payment industry context and the limitations of the analysis.
 
-The objective is not only to analyze the transactional dataset, but to demonstrate the analytical reasoning required to identify suspicious behaviors, understand their potential relationship with fraud and chargebacks, and translate those findings into practical risk-management solutions.
+## 1. Business Problem
 
-The project is being developed incrementally through GitHub Issues, with each stage addressing a specific analytical or business question.
+Card-not-present transactions lack physical-card verification, which increases reliance on behavioral, transactional, and relationship signals to detect fraud. Undetected fraud results in chargebacks, which carry direct financial loss, fees, and operational cost for acquirers and merchants. The business problem addressed here is: **given a sample of transactions, which behavioral patterns are associated with fraud-related chargebacks, and how can that evidence inform a risk-management response?**
 
-> **Documentation note:** This README is intentionally concise during development. A final professional and executive-oriented version will be consolidated after the complete case has been analyzed.
+## 2. Case Objectives
 
----
+1. Analyze the provided transactional data and identify suspicious behaviors, explaining the evidence and the recommended actions.
+2. Identify additional data sources that would strengthen fraud detection beyond the provided dataset.
+3. Provide recommendations to prevent fraud and reduce chargebacks.
+4. Design a conceptual or technical anti-fraud solution.
+5. Present the payment-industry context: money and information flow, acquirer vs. sub-acquirer vs. payment gateway, chargebacks, and the role of anti-fraud systems.
 
-## Case Objectives
+## 3. Dataset
 
-The technical assessment requires addressing four main areas:
+**File:** `data/raw/transactional-sample.csv`
+**Observation period:** 2019-11-01 to 2019-12-01
+**Environment:** Card-Not-Present (CNP)
 
-### 1. Transactional Analysis
+| Field | Description |
+|---|---|
+| `transaction_id` | Unique transaction identifier |
+| `merchant_id` | Merchant where the transaction occurred |
+| `user_id` | Identifier of the cardholder |
+| `card_number` | Payment card used |
+| `transaction_date` | Timestamp of the transaction |
+| `transaction_amount` | Transaction value |
+| `device_id` | Identifier of the device used |
+| `has_cbk` | Whether the transaction received a fraud-related chargeback |
 
-Analyze the provided transaction data to:
+**Baseline:**
 
-* Identify suspicious behaviors.
-* Detect relevant patterns associated with chargebacks.
-* Explain the evidence supporting each finding.
-* Determine what actions could be taken based on those findings.
+| Metric | Value |
+|---|---|
+| Total transactions | 3,199 |
+| Chargebacks | 391 |
+| Non-chargebacks | 2,808 |
+| Overall chargeback rate | 12.22% |
 
-### 2. Fraud Data Expansion
+## 4. Methodology
 
-Identify additional data sources that could improve fraud detection beyond the provided spreadsheet.
+The analysis followed a business-question-first approach: metrics and visualizations were included only where they addressed a specific risk question.
 
-Examples may include:
-
-* Historical transaction behavior.
-* Device intelligence.
-* IP and network information.
-* Geolocation.
-* Velocity signals.
-* Merchant characteristics.
-* Card and account history.
-* Authentication information.
-* Behavioral signals.
-* Previous fraud and chargeback history.
-
-These data sources will be evaluated based on their potential analytical value rather than simply being listed.
-
-### 3. Risk Recommendations
-
-Based on the analytical findings, propose measures to:
-
-* Prevent fraudulent transactions.
-* Reduce chargebacks.
-* Improve transaction monitoring.
-* Prioritize transactions for manual review.
-* Balance fraud prevention with legitimate customer experience.
-
-### 4. Anti-Fraud Solution
-
-Design a conceptual or technical solution capable of supporting:
-
-* Fraud detection.
-* Transaction risk scoring.
-* Decisioning.
-* Monitoring.
-* Investigation.
-* Human review when appropriate.
-
-The proposed solution should connect directly to the patterns identified during the analysis.
-
----
-
-# Industry Understanding
-
-The second part of the case focuses on understanding the payments industry.
-
-The project will address:
-
-## Payment Industry Flows
-
-Explain:
-
-* Money flow.
-* Information flow.
-* Main participants in a payment transaction.
-* The role and responsibilities of each participant.
-
-## Acquirer, Sub-Acquirer and Payment Gateway
-
-Analyze the differences between:
-
-* Acquirer.
-* Sub-acquirer.
-* Payment gateway.
-
-The analysis will also explain how transaction and information flows change depending on the participant involved.
-
-## Chargebacks
-
-Explain:
-
-* What a chargeback is.
-* How a chargeback differs from a cancellation.
-* The relationship between chargebacks and fraud.
-* The relevance of chargebacks within the acquiring ecosystem.
-
-## Anti-Fraud
-
-Explain:
-
-* What an anti-fraud system is.
-* How an acquirer can use anti-fraud capabilities.
-* How risk decisions can be integrated into the payment flow.
-
----
-
-# Dataset Context
-
-The provided dataset contains hypothetical transactional information.
-
-Important business definitions supplied by the case:
-
-| Field       | Meaning                                                               |
-| ----------- | --------------------------------------------------------------------- |
-| `user_id`   | Identifier of the cardholder                                          |
-| `device_id` | Identifier of the device used                                         |
-| `has_cbk`   | Indicates whether the transaction received a fraud-related chargeback |
-
-All transactions occurred in a **Card-Not-Present (CNP)** environment.
-
-This context is important because CNP transactions do not provide the same physical-card verification signals available in card-present transactions, increasing the importance of behavioral, transactional, device, and contextual signals.
-
----
-
-# Analytical Strategy
-
-The analysis follows a progressive workflow designed to move from evidence to decision-making.
-
-```text
+```
 Raw Transactions
-       │
-       ▼
+      │
+      ▼
 Data Quality Assessment
-       │
-       ▼
+      │
+      ▼
 Exploratory Data Analysis
-       │
-       ▼
-Suspicious Behavior Identification
-       │
-       ▼
-Chargeback Pattern Analysis
-       │
-       ▼
-Risk Signal Investigation
-       │
-       ▼
-Risk Scoring / Decision Logic
-       │
-       ▼
-Business Recommendations
-       │
-       ▼
-Anti-Fraud Solution
+      │
+      ▼
+Chargeback vs. Non-Chargeback Comparison
+      │
+      ▼
+Behavioral Analysis (amount, time, user, merchant, card, device)
+      │
+      ▼
+Relationship Analysis (user × merchant, shared cards, temporal proximity)
+      │
+      ▼
+Risk Signal Prioritization
+      │
+      ▼
+Recommendations & Conceptual Anti-Fraud Solution
 ```
 
-The guiding principle is:
+## 5. Data Quality
 
-> **Business questions first, analytical techniques second.**
+`notebooks/01_data_quality_assessment.ipynb` validates the dataset before analysis: column structure and types, missing values, duplicate records, and overall consistency. This step establishes that the dataset is analytically reliable and ready for exploratory analysis.
 
-Visualizations and metrics should only be included when they contribute to understanding transaction risk or support a business decision.
+## 6. Key Analytical Findings
 
----
+Full detail, code, and charts are in `notebooks/02_exploratory_data_analysis.ipynb`.
 
-# Current Analytical Baseline
+### 6.1 Transaction Amount
 
-The current notebook analyzes:
+Chargeback transactions carry substantially higher values than non-chargeback transactions.
 
-* **3,199 transactions**
-* **391 chargebacks**
-* **12.22% overall chargeback rate**
+| | Non-chargeback | Chargeback |
+|---|---|---|
+| Mean | R$ 672.32 | R$ 1,453.57 |
+| Median | R$ 360.32 | R$ 999.47 |
 
-An initial risk-scoring analysis was also developed as an exploratory baseline.
+Chargeback rate by transaction-value range:
 
-| Metric                           |            Result |
-| -------------------------------- | ----------------: |
-| Transactions analyzed            |             3,199 |
-| Chargebacks                      |               391 |
-| Chargeback rate                  |            12.22% |
-| Review threshold                 | `risk_score >= 2` |
-| Transactions selected for review |               354 |
-| Review rate                      |            11.07% |
-| Chargebacks captured             |               294 |
-| Chargebacks not captured         |                97 |
-| Precision                        |            83.05% |
-| Recall                           |            75.19% |
-| Specificity                      |            97.86% |
+| Range | Chargeback rate |
+|---|---|
+| R$ 0 – 100 | 2.97% |
+| R$ 100 – 500 | 4.21% |
+| R$ 500 – 1,000 | 19.84% |
+| R$ 1,000 – 2,000 | 17.73% |
+| R$ 2,000 – 3,000 | 31.16% |
+| R$ 3,000 – 5,000 | 37.32% |
 
-These results represent an **initial analytical baseline** and should not be interpreted as the final anti-fraud strategy.
+Higher transaction values are associated with higher chargeback incidence in this sample. This is an association, not proof that high-value transactions are fraudulent.
 
-Further analysis is required to determine which behavioral and transactional characteristics explain the observed risk.
+### 6.2 Temporal Behavior
 
----
+Chargeback rate varies across the observation period: 13 of 31 days exceeded the 12.22% baseline, including 2019-11-27 (30.12%), 2019-11-25 (20.83%), 2019-11-30 (19.01%), 2019-11-08 (18.46%), 2019-12-01 (17.76%), and 2019-11-29 (17.70%). Temporal variation exists, but the dataset does not establish that these peaks reflect fraud-specific behavior.
 
-# Analytical Questions
+### 6.3 User Behavior
 
-The project is designed around questions such as:
+A subset of users shows meaningful transaction volume combined with very high chargeback rates, e.g. user 96025 (14 transactions, 13 chargebacks, 92.86%), user 91637 (22 transactions, 19 chargebacks, 86.36%), and user 11750 (31 transactions, 25 chargebacks, 80.65%). A filtered high-risk group of 15 users accounts for 156 transactions, 141 chargebacks, and 36.06% of all chargebacks in the sample. Users with only a single transaction and a single chargeback were deliberately excluded as insufficient evidence.
 
-### Transaction Behavior
+### 6.4 Merchant Behavior
 
-* How are transactions distributed?
-* How are transaction amounts distributed?
-* Are chargebacks concentrated in specific transaction-value ranges?
-* Are there temporal patterns associated with chargebacks?
+Chargebacks are strongly concentrated in a subset of merchants, e.g. merchant 1308 (15/15, 100%), merchant 44927 (11/11, 100%), and merchant 73271 (10/10, 100%). Using a threshold of ≥5 transactions and ≥80% chargeback rate, 23 merchants account for 193 transactions, 176 chargebacks, and 45.01% of all chargebacks. These are risk concentrations that warrant investigation, not evidence that the merchants are fraudulent.
 
-### User Behavior
+### 6.5 User × Merchant Relationships
 
-* Are certain users associated with unusually high transaction frequency?
-* Are chargebacks concentrated among specific behavioral profiles?
-* Are there abnormal relationships between users and cards?
+Several user–merchant pairs show repeated transactions with consistent chargeback outcomes, e.g. user 96025 × merchant 1308 (10/10), user 75710 × merchant 77130 (10/10), and user 7725 × merchant 73271 (7/7).
 
-### Merchant Behavior
+### 6.6 Card Behavior — Shared Payment Cards
 
-* Are some merchants associated with significantly different chargeback rates?
-* Does transaction concentration by merchant provide useful risk information?
+Cards used by more than one user show a markedly higher chargeback rate than cards used by a single user:
 
-### Card Behavior
+| Card type | Transactions | Chargebacks | Chargeback rate |
+|---|---|---|---|
+| Non-shared cards | 3,128 | 367 | 11.73% |
+| Shared cards | 71 | 24 | 33.80% |
 
-* Are cards associated with multiple users?
-* Are certain cards involved in unusually frequent transactions?
-* Are card-level patterns associated with chargebacks?
+This is one of the strongest cross-dimensional findings in the analysis. Shared payment instruments are not inherently fraudulent — they may have legitimate explanations — but the elevated rate justifies further review.
 
-### Device Behavior
+### 6.7 Temporal Proximity of Shared Cards
 
-* Are devices shared by multiple users?
-* Are devices associated with multiple cards?
-* Do device-sharing patterns provide useful fraud signals?
+Among investigated shared-card relationships, transactions occurred as little as ~3.1, ~42.9, and ~55.6 minutes apart (e.g. users 96025 and 79054 sharing a card at merchant 1308, ~55.6 minutes apart). Temporal proximity alone is not proof of fraud, but it strengthens the signal when combined with a shared instrument, multiple users, the same merchant, and chargeback outcomes.
 
-### Combined Signals
+### 6.8 Device Behavior
 
-* Do multiple weak signals become meaningful when combined?
-* Which signals provide the strongest evidence of suspicious behavior?
-* What percentage of transactions could reasonably be sent for additional review?
-* What is the trade-off between fraud detection and customer friction?
+No device in the sample was associated with more than one user (maximum users per device: 1). `device_shared` did not provide a useful signal in this dataset and was not prioritized — a relevant negative finding.
 
----
+## 7. Prioritized Risk Signals
 
-# Project Structure
+1. Higher transaction amounts
+2. Merchant-level chargeback concentration
+3. Repeated user × merchant chargeback behavior
+4. Shared payment cards across users, particularly combined with temporal proximity
 
-```text
+Device sharing was evaluated and ruled out as a signal for this dataset.
+
+## 8. Business Recommendations
+
+- Apply greater review priority to unusually high-value transactions.
+- Monitor merchants with sustained abnormal chargeback concentrations.
+- Use historical user × merchant chargeback behavior as review context.
+- Monitor payment instruments reused by multiple users.
+- Combine relationship and temporal signals rather than relying on a single rule.
+- Introduce review / step-up authentication for selected medium-risk transactions.
+- Continuously monitor outcomes and recalibrate thresholds as new data arrives.
+
+These are recommendations derived from the analysis, not implemented production controls.
+
+## 9. Additional Data for Fraud Detection
+
+Beyond the fields provided, the following would materially strengthen fraud detection:
+
+- Historical transaction behavior per user, card, and merchant
+- IP address and network information
+- Geolocation
+- Device fingerprinting
+- Authentication / 3DS data
+- Account age and history
+- Payment-instrument history
+- Merchant profile and category
+- Merchant historical risk performance
+- Velocity across users, cards, devices, and merchants
+- Historical fraud and chargeback history
+- Behavioral and session-level signals
+
+## 10. Conceptual Anti-Fraud Solution
+
+The case allows for a conceptual or technical solution; this project proposes a conceptual decision flow rather than a production implementation, ML model, or scoring service:
+
+```
+Transaction
+     │
+     ▼
+Risk Signals (amount, merchant history, user history,
+              user × merchant history, card relationships,
+              temporal/velocity behavior, prior chargebacks)
+     │
+     ▼
+Risk Evaluation
+     │
+     ▼
+APPROVE  /  REVIEW  /  DENY
+     │
+     ▼
+Investigation
+     │
+     ▼
+Feedback / Monitoring (recalibrate thresholds over time)
+```
+
+Transactions with few or no risk signals proceed normally (APPROVE). Transactions matching one or more prioritized signals — e.g. high value combined with a shared card and short temporal proximity — are routed to REVIEW for manual or step-up verification. Transactions matching multiple strong, corroborating signals may be routed to DENY. Outcomes feed back into the monitoring layer to keep thresholds current.
+
+## 11. Limitations
+
+- The dataset is hypothetical and may not reflect real-world transaction distributions.
+- The observation window (one month) is limited.
+- A chargeback outcome (`has_cbk`) indicates a fraud-related chargeback but is not equivalent to legal proof of fraud.
+- Some extreme rates (e.g. 100% chargeback rate for a merchant or user) are computed from relatively small transaction counts and should be treated cautiously.
+- No merchant category or business-context data was available.
+- No IP, geolocation, authentication, or session data was available.
+- The analysis identifies associations, not causal relationships.
+- All risk signals require validation against a larger, labeled dataset before any production use.
+
+## 12. Reproducibility
+
+**Requirements:** Python environment with the packages listed in `requirements.txt`.
+
+```bash
+pip install -r requirements.txt
+```
+
+**Structure:**
+
+```
 cloudwalk-risk-analyst-case/
-│
 ├── data/
 │   └── raw/
 │       └── transactional-sample.csv
-│
 ├── notebooks/
-│   └── 01_data_quality_assessment.ipynb
-│
+│   ├── 01_data_quality_assessment.ipynb
+│   └── 02_exploratory_data_analysis.ipynb
 ├── README.md
-│
-└── .gitignore
+└── requirements.txt
 ```
 
-The repository intentionally remains lightweight because this is an analytical case rather than a production software system.
+**Execution order:**
 
----
+1. `notebooks/01_data_quality_assessment.ipynb` — validates structure, types, missing values, and duplicates.
+2. `notebooks/02_exploratory_data_analysis.ipynb` — runs the full exploratory and risk-signal analysis described above; executes end to end from the raw CSV.
 
-# Development Workflow
+## 13. Conclusion
 
-The project is organized through GitHub Issues.
-
-Each issue represents a specific analytical or business milestone.
-
-The current development sequence includes:
-
-1. Data understanding and quality assessment.
-2. Exploratory data analysis.
-3. Suspicious behavior investigation.
-4. Fraud and chargeback pattern analysis.
-5. Risk signal development.
-6. Recommendations.
-7. Anti-fraud solution design.
-8. Industry analysis.
-9. Final case presentation.
-
-The analysis is developed incrementally so that each conclusion can be traced back to supporting evidence.
-
----
-
-# Current Issue
-
-## Issue #5 — Build Exploratory Data Analysis
-
-The next analytical milestone is to perform focused exploratory data analysis covering:
-
-* Transaction volume.
-* Transaction amounts.
-* Chargeback rate.
-* Temporal distribution.
-* Users.
-* Merchants.
-* Cards.
-* Devices.
-* Differences between chargeback and non-chargeback transactions.
-
-The notebook should prioritize analyses capable of answering business questions and identifying potential risk signals.
-
----
-
-# Validation Principles
-
-The project follows several validation principles:
-
-### Reproducibility
-
-The main notebook must execute successfully from beginning to end.
-
-### Analytical Purpose
-
-Every metric and visualization must have a clear analytical purpose.
-
-### Evidence-Based Reasoning
-
-Suspicious behaviors should be supported by measurable evidence rather than intuition alone.
-
-### Business Relevance
-
-Technical findings should ultimately translate into a risk-management implication or decision.
-
-### Customer Centricity
-
-Fraud prevention should consider both:
-
-* Reduction of fraudulent transactions and chargebacks.
-* Preservation of legitimate customer transactions.
-
-### Practicality
-
-Recommendations should consider how they could realistically be incorporated into an acquiring or payment environment.
-
----
-
-# Scope of the Final Solution
-
-The final case is expected to connect the following elements:
-
-```text
-Transaction Data
-       │
-       ▼
-Risk Signals
-       │
-       ▼
-Risk Assessment
-       │
-       ▼
-Decision Engine
-       │
- ┌─────┼──────────┐
- ▼     ▼          ▼
-Approve Review   Decline
-       │
-       ▼
-Investigation
-       │
-       ▼
-Feedback / Monitoring
-```
-
-The final architecture will be refined based on the evidence discovered during the analysis.
-
----
-
-# Final Deliverable
-
-The completed case will consolidate:
-
-* Data analysis.
-* Suspicious behavior findings.
-* Supporting evidence.
-* Chargeback insights.
-* Additional data recommendations.
-* Fraud prevention recommendations.
-* Anti-fraud solution proposal.
-* Payment industry analysis.
-* Clear business reasoning.
-* Final conclusions.
-
-The final presentation will prioritize **logical reasoning, analytical quality, problem solving, innovation, customer centricity, and solution performance**, consistent with the evaluation criteria described in the case.
-
----
-
-# Final Documentation Plan
-
-During development, this README will remain focused on project context and progress.
-
-At the end of the case, it will be rewritten into a concise professional portfolio document containing:
-
-* Executive summary.
-* Business problem.
-* Dataset overview.
-* Analytical methodology.
-* Key findings.
-* Fraud and chargeback insights.
-* Recommended actions.
-* Anti-fraud solution.
-* Industry context.
-* Limitations.
-* Reproducibility instructions.
-
-The final version will avoid unnecessary implementation detail and focus on the reasoning and evidence that support the proposed solution.
-
----
+The analysis of 3,199 CNP transactions identified four evidence-based risk signals — transaction amount, merchant concentration, repeated user × merchant relationships, and shared payment cards combined with temporal proximity — while ruling out device sharing as a useful signal for this dataset. These findings support a set of prioritized, proportionate business recommendations and a conceptual APPROVE / REVIEW / DENY decision flow, providing a defensible starting point for risk management that would need to be validated against a larger dataset before production use.
 
 ## Author
 
 **Vagner Ferreira**
-
 Data Analyst / Data Engineering / Data Science
-
-Brazil
